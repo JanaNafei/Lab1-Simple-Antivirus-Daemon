@@ -1,5 +1,5 @@
 if [ $# -ne 3 ]; then
-echo "Use: ./ antivirusd.sh <dir> <malicious_dir> <interval-secs>"
+echo "Use: ./antivirusd.sh <dir> <malicious_dir> <interval-secs>"
 exit 1
 fi
 if [ ! -d "$1" ]; then
@@ -24,15 +24,19 @@ echo "interval-secs: $3"
 
 for file in "$1"/*
 do
-if grep -Ei "virus|trojan|malware|worm|ransomware" "$file"; then
-echo "Malicious file found (due to a keyword): $(basename "$file")"
-fi
+flag=0
 filename=$(basename "$file") 
 extension=${filename##*.}
 case  "$extension" in 
 exe|vbs|bat|scr|ps1)
-echo "Malicious file found (due to extension): $filename"
+flag=1
 ;;
 esac
+if grep -Eqi "virus|trojan|malware|worm|ransomware" "$file"; then
+flag=1
+fi
+if [ $flag -eq 1 ]; then
+cp -- "$file" "$2"&& rm -- "$file" && echo " $filename is malicious and it is DELETED "
+fi
 done
 
