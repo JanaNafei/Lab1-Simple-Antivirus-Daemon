@@ -26,7 +26,10 @@ scan_file() {
 for file in "$1"/*
 do
 flag=0
-filename=$(basename "$file") 
+filename=$(basename "$file")
+if grep -Fxq "$filename" whitelist.txt; then
+continue
+fi 
 extension=${filename##*.}
 case  "$extension" in 
 exe|vbs|bat|scr|ps1)
