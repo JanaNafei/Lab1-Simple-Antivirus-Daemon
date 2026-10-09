@@ -22,6 +22,7 @@ echo "main_dir: $1"
 echo "quarantine_dir: $2"
 echo "interval-secs: $3"
 
+scan_file() {
 for file in "$1"/*
 do
 flag=0
@@ -36,7 +37,30 @@ if grep -Eqi "virus|trojan|malware|worm|ransomware" "$file"; then
 flag=1
 fi
 if [ $flag -eq 1 ]; then
-cp -- "$file" "$2"&& rm -- "$file" && echo " $filename is malicious and it is DELETED "
+cp -- "$file" "$2" && rm -- "$file" && echo " $filename is malicious and it is DELETED "
+fi
+done
+}
+
+scan_file "$1" "$2"
+touch directory-info.last
+ls -l "$1" > directory-info.last
+
+while true; do
+sleep "$3"
+result=0
+touch directory-info.new
+ls -l "$1" > directory-info.new
+diff directory-info.last directory-info.new > /dev/null
+result=$?
+if [ $result -eq 0 ]; then
+continue
+elif [ $result -eq 1 ]; then
+scan_file "$1" "$2"
+ls -l "$1" > directory-info.last
+else
+echo "Error: diff command failed"
+exit 1
 fi
 done
 
