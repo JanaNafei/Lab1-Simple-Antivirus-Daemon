@@ -48,6 +48,7 @@ done
 scan_file "$1" "$2"
 touch directory-info.last
 ls -l "$1" > directory-info.last
+cp -- whitelist.txt whitelist.last
 
 while true; do
 sleep "$3"
@@ -55,15 +56,20 @@ result=0
 touch directory-info.new
 ls -l "$1" > directory-info.new
 diff directory-info.last directory-info.new > /dev/null
-result=$?
-if [ $result -eq 0 ]; then
-continue
-elif [ $result -eq 1 ]; then
-scan_file "$1" "$2"
-ls -l "$1" > directory-info.last
-else
+result1=$?
+diff whitelist.txt whitelist.last > /dev/null
+result2=$?
+
+if [ $result1 -eq 2 ] || [ $result2 -eq 2 ]; then
 echo "Error: diff command failed"
 exit 1
+elif [ $result1 -eq 1 ] || [ $result2 -eq 1 ]; then
+scan_file "$1" "$2"
+ls -l "$1" > directory-info.last
+cp -- whitelist.txt whitelist.last
+elif [ $result1 -eq 0 ]; then
+continue
 fi
+
 done
 
