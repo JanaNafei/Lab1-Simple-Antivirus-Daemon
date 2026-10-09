@@ -21,3 +21,18 @@ fi
 echo "main_dir: $1"
 echo "quarantine_dir: $2"
 echo "interval-secs: $3"
+
+for file in "$1"/*
+do
+if grep -Ei "virus|trojan|malware|worm|ransomware" "$file"; then
+echo "Malicious file found (due to a keyword): $(basename "$file")"
+fi
+filename=$(basename "$file") 
+extension=${filename##*.}
+case  "$extension" in 
+exe|vbs|bat|scr|ps1)
+echo "Malicious file found (due to extension): $filename"
+;;
+esac
+done
+
