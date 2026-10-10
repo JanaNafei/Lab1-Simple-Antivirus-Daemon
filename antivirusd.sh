@@ -8,8 +8,7 @@ echo "Error: main(source) directory does not exist"
 exit 1
 fi
 if [ ! -d "$2" ]; then
-echo "Error: quarantine directory does not exist"
-exit 1
+mkdir -p "$2"
 fi
 if ! [[  "$3" =~ ^[0-9]+$ ]]; then
 echo "Error: interval-secs must be a positive integer"
