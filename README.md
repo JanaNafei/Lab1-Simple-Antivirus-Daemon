@@ -93,9 +93,172 @@ The search is case-insensitive, so uppercase and lowercase variations are detect
 
 When a file is identified as malicious, the daemon:
 
-Prints a message indicating that the file is malicious and will be deleted from the source directory.
+Print to the terminal: ""filename" is malicious and it is DELETED"
 
-Copies the file to malicious_dir/.
+2.Copy the file into malicious_dir, keeping its original filename
 
-Removes the original file from dir/.
+3.Delete the original file from dir
+
+# 7.antivirusd.sh (Antivirus-Daemon)
+* Option 1: Using the Makefile
+
+From the project directory, we can run:
+
+make antivirus
+
+The current Makefile runs:
+
+./antivirusd.sh dir malicious_dir 10
+
+* Option 2: Running the script directly
+
+we can run:
+
+./antivirusd.sh dir malicious_dir 10
+
+we can replace 10 with another positive integer to change the monitoring interval.
+
+* How the daemon works
+
+Validates the supplied arguments and directories.
+
+Performs an initial scan immediately.
+
+Creates a snapshot of the source directory using ls -l.
+
+Waits for the configured interval.
+
+Creates a new snapshot and compares it with the previous snapshot using diff.
+
+Scans the directory if a change is detected.
+
+Updates the saved snapshot and repeats the process.
+
+The daemon also compares the whitelist against its previous snapshot so that changes to the whitelist can trigger another scan.
+
+# 8.restore.sh (Restore tool)
+
+The restore tool allows users to review quarantined files and decide what to do with each one.
+
+* 2 Options to run the script:
+
+1.Run using the Makefile:
+
+make restore
+
+2.Run directly:
+
+./restore.sh dir malicious_dir
+
+* Available options
+
+When the quarantine directory contains files, the script displays a numbered list. Select a file by entering its number.
+
+The script then presents three options:
+
+Option 1 — Restore the file:
+
+Moves the selected file back to the source directory, prints a restoration message, and adds its filename to whitelist.txt so that future scans can skip it.
+
+Option 2 — Permanently delete the file:
+
+Removes the selected file from the quarantine directory and prints a deletion message.
+
+Option 3 — Return to the list:
+
+Leaves the file unchanged and displays the list again.
+
+If the quarantine directory is empty when the tool starts, it prints:
+
+No malicious files to review.
+
+The antivirus daemon and restore tool should not be run simultaneously.
+
+# 9.Scheduled scanning with Cron
+
+The antivirus-cron.sh script implements the scanning and quarantine behavior without continuously running a daemon. Cron can execute it automatically according to a schedule.
+
+From the project directory,we can run:
+
+./antivirus-cron.sh dir malicious_dir
+
+Confirm that the script scans the source directory and moves detected files to the quarantine directory.
+
+then
+
+we run:
+
+pwd
+
+then we use the full path returned by this command in our cron entry. Cron jobs should not depend on the terminal's current working directory.
+
+Then we should open the crontab editor:
+
+crontab -e
+
+Add an entry using the absolute path to the script and the two directories:
+
+* * * * * /absolute/path/to/antivirus-cron.sh /absolute/path/to/dir /absolute/path/to/malicious_dir
+
+This executes the script once every minute.
+
+Important: Standard cron schedules jobs by minute, not by second. Therefore, standard cron cannot guarantee execution at second 23 of every minute. The entry above runs at the start of each scheduled minute, subject to system scheduling delays.
+
+then we should save and verify:
+
+Save the crontab and list the installed entries:
+
+crontab -l
+
+To stop scheduled execution, edit the crontab again and remove the corresponding entry(i just add a hashtag to consider it as a comment).
+
+* Cron expression for the third Friday of each month at 12:31 AM
+
+31 0 15-21 * 5
+
+This expression runs on Fridays falling between the 15th and 21st of the month, which identifies the third Friday.
+
+# 10.Whitelist
+
+The whitelist prevents a restored file from being flagged repeatedly when it still matches a detection rule.
+
+* How a file is added:
+
+When the user selects option 1 in restore.sh:
+
+The file is moved from malicious_dir/ back to dir/.
+
+Its filename is appended to whitelist.txt.
+
+The daemon checks the whitelist before checking the file's extension or contents.
+
+How the daemon checks the whitelist
+
+Inside scan_file() in antivirusd.sh, the script uses:
+
+grep -Fxq "$filename" whitelist.txt
+
+If the filename is already present in the whitelist, the script skips that file.
+
+-F treats the filename as a literal string.
+
+-x requires an exact match for the whole line.
+
+-q suppresses normal search output.
+
+Because the whitelist is stored in a file, its entries persist when the daemon stops and starts again.
+
+The daemon also maintains whitelist.last to detect changes to the whitelist between scans.
+
+# 11.Makefile targets
+The Makefile currently provides the following targets:
+
+prepare : Creates dir/ and malicious_dir/ if they do not exist. (Pre-step)
+
+antivirus : Runs the antivirus daemon with a 10-second interval.
+
+restore : Runs the interactive restore tool.
+
+The antivirus and restore targets depend on prepare, ensuring the required directories are created before execution.
+
 

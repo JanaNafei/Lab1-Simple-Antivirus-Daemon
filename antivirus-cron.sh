@@ -1,5 +1,4 @@
 #!/bin/bash
-
 if [ $# -ne 2 ]; then
 echo "Use: ./antivirus-cron.sh <dir> <malicious_dir> "
 exit 1
