@@ -38,7 +38,7 @@ fi
 done
 }
 
-if [ ! -f "home/jana/Desktop/os_labs/Lab1-Simple-Antivirus-Daemon/whitelist.txt" ]; then
-touch "home/jana/Desktop/os_labs/Lab1-Simple-Antivirus-Daemon/whitelist.txt"
+if [ ! -f "/home/jana/Desktop/os_labs/Lab1-Simple-Antivirus-Daemon/whitelist.txt" ]; then
+touch "/home/jana/Desktop/os_labs/Lab1-Simple-Antivirus-Daemon/whitelist.txt"
 fi
 scan_file "$1" "$2"
