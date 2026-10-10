@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ $# -ne 3 ]; then
 echo "Use: ./antivirusd.sh <dir> <malicious_dir> <interval-secs>"
 exit 1
@@ -23,6 +24,7 @@ echo "quarantine_dir: $2"
 echo "interval-secs: $3"
 
 scan_file() {
+shopt -s nullglob
 for file in "$1"/*
 do
 flag=0

@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ $# -ne 2 ]; then
 echo "Use: ./restore.sh <dir> <malicious_dir> "
 exit 1
