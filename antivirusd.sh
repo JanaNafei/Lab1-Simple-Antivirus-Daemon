@@ -45,8 +45,10 @@ fi
 done
 }
 
+if [ ! -f whitelist.txt ]; then
+touch whitelist.txt
+fi
 scan_file "$1" "$2"
-touch directory-info.last
 ls -l "$1" > directory-info.last
 cp -- whitelist.txt whitelist.last
 
